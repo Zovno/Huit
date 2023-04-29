@@ -1,9 +1,8 @@
 ﻿#define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
-
-using namespace std;
 
 typedef struct Pixel
 {
@@ -252,37 +251,88 @@ void applyGammaCorrection(BMPFile* bmp_file, float gamma)
     }
 }
 
+bool checkImg(const char* filename) {
+    const char* extension = strrchr(filename, '.');
+    if (extension == NULL || strcmp(extension, ".bmp") != 0) {
+        printf("Wrong format file\n");
+        return 0;
+    }
 
+    return 1;
+}
+
+int menu()
+{
+    printf("/----------------------\\\n");
+    printf("| 1) Gamma correction   |\n");
+    printf("| 2) Median filter      |\n");
+    printf("| 3) To grayscale       |\n");
+    printf("| 4) To negative        |\n");
+    printf("| 0) exit               |\n");
+    printf("\\______________________/\n");
+    printf("Ur choise: ");
+    int choise;
+    scanf("%d", &choise);
+    return choise;
+}
+
+void saveBMP(BMPFile* bmpf)
+{
+    char filename[100];
+
+    printf("Enter new file name: ");
+    scanf("%s", filename);
+
+    if (checkImg(filename))
+    {
+        saveBMPFile(filename, bmpf);
+        return;
+    }
+
+    printf("Error");
+}
 
 int main()
 {
-    char filename[100] = "D:\\111.bmp";
-    char filename1[100] = "D:\\2.bmp";
-    char filename2[100] = "D:\\3.bmp";
-    char filename3[100] = "D:\\4.bmp";
-    char filename4[100] = "D:\\5.bmp";
-    //printf("Enter file name: ");
-    //scanf("%s", filename);
+    char filename[100];
+    int a;
 
-    /*printf("Enter file new name: ");
-    scanf("%s", filename1);*/
+    while (true)
+    {
+        printf("Enter file name: ");
+        scanf("%s", filename);
 
-    BMPFile* bmpfile = loadBMPFile(filename);
-    BMPFile* bmpfile2 = loadBMPFile(filename);
-    BMPFile* bmpfile3 = loadBMPFile(filename);
-    BMPFile* bmpfile4 = loadBMPFile(filename);
-    
-    convertToGrayscale(bmpfile);
-    //второй аргумент от 0 до 255
-    applyGammaCorrection(bmpfile2, 7);
+        if (checkImg(filename))
+        {
+            BMPFile* bmpf = loadBMPFile(filename);
 
-    //второй аргумент нечётн положительный
-    applyMedianFilter(bmpfile3, 3);
-    convertToNegative(bmpfile4);
-
-    saveBMPFile(filename1, bmpfile);
-    saveBMPFile(filename2, bmpfile2);
-    saveBMPFile(filename3, bmpfile3);
-    saveBMPFile(filename4, bmpfile4);
+            switch (menu())
+            {
+            case 1:
+                printf("\n Enter gamma (0-255): ");
+                scanf("%d", &a);
+                applyGammaCorrection(bmpf, a);
+                saveBMP(bmpf);
+                break;
+            case 2: 
+                printf("\n Enter filtersize (x%%2==1): ");
+                scanf("%d", &a);
+                applyMedianFilter(bmpf, a);
+                saveBMP(bmpf);
+                break;
+            case 3: 
+                convertToGrayscale(bmpf);
+                saveBMP(bmpf);
+                break;
+            case 4: 
+                convertToNegative(bmpf);
+                saveBMP(bmpf);
+                break;
+            case 0: return 0;
+            default:
+                break;
+            }
+        }
+    }
     return 0;
 }
